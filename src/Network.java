@@ -3,7 +3,7 @@ import java.util.Arrays;
 public class Network {
 	double[][] output; //layer, neuron
 	double[][][] weights; //layer, neuron, previous neuron
-	double[][] bias; //layer neuron
+	double[][] bias; //layer, neuron
 	
 
 	public final int[] NETWORK_LAYER_SIZES;
@@ -11,7 +11,10 @@ public class Network {
 	public final int OUTPUT_SIZE;
 	public final int NETWORK_SIZE;
 	
-	//setup
+	/**
+	 * Sets up the neural network by initializing the output, weights, and bias arrays.
+	 * @param NETWORK_LAYER_SIZES an integer array of each layer's size.
+	 */
 	public Network(int ...NETWORK_LAYER_SIZES) {
 		this.NETWORK_LAYER_SIZES = NETWORK_LAYER_SIZES;
 		this.NETWORK_SIZE = NETWORK_LAYER_SIZES.length;
@@ -46,7 +49,7 @@ public class Network {
 				output[layer][neuron] = sigmoid(sum);
 			}
 		}
-		return output[NETWORK_SIZE-1];
+		return output[NETWORK_SIZE-1]; //final output
 		
 	}
 	
