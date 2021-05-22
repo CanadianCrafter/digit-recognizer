@@ -1,12 +1,11 @@
 import java.util.Arrays;
 
 public class Network {
-	double[][] output; //layer, neuron
-	double[][][] weights; //layer, neuron, previous neuron
-	double[][] bias; //layer, neuron
-	
+	public double[][] output; //layer, neuron
+	public double[][][] weights; //layer, neuron, previous neuron
+	public double[][] bias; //layer, neuron
 
-	public final int[] NETWORK_LAYER_SIZES;
+	public final int[] NETWORK_LAYER_SIZES; //sizes of each layer
 	public final int INPUT_SIZE;
 	public final int OUTPUT_SIZE;
 	public final int NETWORK_SIZE;
@@ -27,33 +26,42 @@ public class Network {
 		
 		for(int i =0;i<NETWORK_SIZE;i++) {
 			this.output[i] = new double[NETWORK_LAYER_SIZES[i]];
-			this.bias[i] = new double[NETWORK_LAYER_SIZES[i]];
+			this.bias[i] = NetworkTools.createRandomArray(NETWORK_LAYER_SIZES[i], 0.2, 0.8);
 			
 			//there are no weights for the input layer
 			if(i>0) {
-				this.weights[i] = new double[NETWORK_LAYER_SIZES[i]][NETWORK_LAYER_SIZES[i-1]];
+				this.weights[i] = NetworkTools.createRandomArray(NETWORK_LAYER_SIZES[i],NETWORK_LAYER_SIZES[i-1], -0.5,0.5);
 			}
 		}
 		
 	}
-	//feed forward process
-	public double[] calculate(double ... input) {
-		if(input.length!=this.INPUT_SIZE)return null;
-		this.output[0]=input;
-		for(int layer =1;layer<NETWORK_SIZE;layer++) {
-			for(int neuron =0;neuron<NETWORK_LAYER_SIZES[layer];neuron++) {
-				double sum =bias[layer][neuron];
-				for(int prevNeuron =0;prevNeuron<NETWORK_LAYER_SIZES[layer-1];prevNeuron++) {
-					sum += weights[layer][neuron][prevNeuron]*output[layer-1][prevNeuron];
+	
+	/**
+	 * The feed forward process
+	 * @param input The values for the first layer.
+	 * @return a double array containing the output for the final layer.
+	 */
+	public double[] calculate(double... input) {
+		if (input.length != this.INPUT_SIZE) return null;
+		this.output[0] = input;
+		for (int layer = 1; layer < NETWORK_SIZE; layer++) {
+			for (int neuron = 0; neuron < NETWORK_LAYER_SIZES[layer]; neuron++) {
+				double sum = bias[layer][neuron];
+				for (int prevNeuron = 0; prevNeuron < NETWORK_LAYER_SIZES[layer - 1]; prevNeuron++) {
+					sum += weights[layer][neuron][prevNeuron] * output[layer - 1][prevNeuron];
 				}
 				output[layer][neuron] = sigmoid(sum);
 			}
 		}
-		return output[NETWORK_SIZE-1]; //final output
-		
+		return output[NETWORK_SIZE - 1]; 
+
 	}
 	
-	//sigmoid function used to compress values to between 0 and 1.
+	/**
+	 * Implementation of the sigmoid function which compresses values to between 0 and 1.
+	 * @param x X value.
+	 * @return double value of sigmoid function at x.
+	 */
 	private double sigmoid(double x) {
 		return 1d/(1+Math.exp(-x));
 	}
