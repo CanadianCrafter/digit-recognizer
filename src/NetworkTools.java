@@ -64,6 +64,24 @@ public class NetworkTools {
 	}
 	
 	/**
+	 * Checks if an array contains a certain value at least once.
+	 * @param <T>
+	 * @param array The array of values being searched.
+	 * @param value The value being searched for.
+	 * @return Returns true if the given value occurs at least once in the array and false if not.
+	 */
+	public static <T extends Comparable<T>> boolean containsValue(T[] array, T value) {
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != null) {
+				if (value.compareTo(array[i]) == 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Finds the index of the maximum value of a double array.
 	 * @param values Double array o9f values.
 	 * @return Returns the index of the max value in a double array.
