@@ -4,6 +4,8 @@ public class Network {
 	public double[][] output; //layer, neuron
 	public double[][][] weights; //layer, neuron, previous neuron
 	public double[][] bias; //layer, neuron
+	public double[][] errorSignal; //layer, neuron
+	public double[][] outputDerivative; //layer, neuron
 
 	public final int[] NETWORK_LAYER_SIZES; //sizes of each layer
 	public final int INPUT_SIZE;
@@ -23,10 +25,14 @@ public class Network {
 		this.output = new double [NETWORK_SIZE][];
 		this.weights = new double [NETWORK_SIZE][][];
 		this.bias = new double [NETWORK_SIZE][];
+		this.errorSignal = new double [NETWORK_SIZE][];
+		this.outputDerivative = new double [NETWORK_SIZE][];
 		
 		for(int i =0;i<NETWORK_SIZE;i++) {
 			this.output[i] = new double[NETWORK_LAYER_SIZES[i]];
 			this.bias[i] = NetworkTools.createRandomArray(NETWORK_LAYER_SIZES[i], 0.2, 0.8);
+			this.errorSignal[i] = new double[NETWORK_LAYER_SIZES[i]];
+			this.outputDerivative[i] = new double[NETWORK_LAYER_SIZES[i]];
 			
 			//there are no weights for the input layer
 			if(i>0) {
@@ -41,7 +47,7 @@ public class Network {
 	 * @param input The values for the first layer.
 	 * @return a double array containing the output for the final layer.
 	 */
-	public double[] calculate(double... input) {
+	public double[] feedForward(double... input) {
 		if (input.length != this.INPUT_SIZE) return null;
 		this.output[0] = input;
 		for (int layer = 1; layer < NETWORK_SIZE; layer++) {
@@ -51,10 +57,42 @@ public class Network {
 					sum += weights[layer][neuron][prevNeuron] * output[layer - 1][prevNeuron];
 				}
 				output[layer][neuron] = sigmoid(sum);
+				
+				//calculates the derivative of the output
+				outputDerivative[layer][neuron] = output[layer][neuron]*(1-output[layer][neuron]); 
 			}
 		}
 		return output[NETWORK_SIZE - 1]; 
 
+	}
+	
+	/**
+	 * Finds the error signal for each neuron based on the back propagation algorithm.
+	 * @param target is the target values for the output layer.
+	 */
+	public void backpropError(double[] target) {
+		//Calculate the error signal for output layer. 
+		//error = output derivative x (final output - target value)
+		for (int neuron = 0; neuron < NETWORK_LAYER_SIZES[NETWORK_SIZE - 1]; neuron++) {
+			errorSignal[NETWORK_SIZE - 1][neuron] = outputDerivative[NETWORK_SIZE - 1][neuron]
+					* (output[NETWORK_SIZE - 1][neuron] - target[neuron]);
+		}
+		//Recursively calculate the error signal for each hidden layer. 
+		//error = output derivative x sum of (weights x error signals) from current neuron to each neuron in the next neuron.
+		//Next neuron because back propagation starts from the output layer and goes through each layer until the first hidden layer.
+		for (int layer = NETWORK_SIZE - 2; layer > 0; layer--) {
+			for (int neuron = 0; neuron < NETWORK_LAYER_SIZES[layer]; neuron++) {
+
+				for (int nextNeuron = 0; nextNeuron < NETWORK_LAYER_SIZES[layer + 1]; nextNeuron++) {
+					errorSignal[layer][neuron] += weights[layer + 1][nextNeuron][neuron]
+							* errorSignal[layer + 1][nextNeuron];
+				}
+
+				errorSignal[layer][neuron] *= outputDerivative[layer][neuron];
+
+			}
+		}
+		
 	}
 	
 	/**
@@ -68,7 +106,7 @@ public class Network {
 	
 	public static void main(String[] args) {
 		Network net = new Network(4,3,3,2);
-		System.out.println(Arrays.toString(net.calculate(0.2,0.6,0.2,0.4)));
+		System.out.println(Arrays.toString(net.feedForward(0.2,0.6,0.2,0.4)));
 		
 	}
 	
